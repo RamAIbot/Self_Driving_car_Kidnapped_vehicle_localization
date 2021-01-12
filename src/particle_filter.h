@@ -63,8 +63,8 @@ class ParticleFilter {
    * @param predicted Vector of predicted landmark observations
    * @param observations Vector of landmark observations
    */
-  void dataAssociation(std::vector<LandmarkObs> predicted, 
-                       std::vector<LandmarkObs>& observations,Particle& particle);
+  double dataAssociation(std::vector<LandmarkObs> predicted, 
+                       std::vector<LandmarkObs>& observations,Particle& particle,double std_landmark[],int particle_no);
                        
   double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs,
                    double mu_x, double mu_y);

@@ -35,7 +35,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
    */
    
  // cout<<"Initilaiztion particle start"<<endl;
-  num_particles = 50;  // TODO: Set the number of particles
+  num_particles = 20;  // TODO: Set the number of particles
   std::default_random_engine gen;
   if(!is_initialized)
   {
@@ -103,9 +103,9 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
 	//cout<<"Prediction ends"<<endl;
 }
 
-void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
+double ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
                                      vector<LandmarkObs>& observations,
-									 Particle& particle) {
+									 Particle& particle,double std_landmark[],int particle_no) {
   /**
    * TODO: Find the predicted measurement that is closest to each 
    *   observed measurement and assign the observed measurement to this 
@@ -120,6 +120,8 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    std::vector<double> sense_x;
    std::vector<double> sense_y;
    
+   
+   double tot_weight=1;
    //cout<<"dataAssociation start"<<endl;
    for(int i=0;i<observations.size();i++)
    {
@@ -127,6 +129,7 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    	double y_obs = observations.at(i).y;
    	double best_obs = 10;
    	double best_obs_id = 10;
+   	int landmark_number=0;
    	for(int j=0;j<predicted.size();j++)
    	{
    		//double x_pred = predicted.at(j).x;
@@ -138,10 +141,16 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    		{
    			best_obs = dist;
    			best_obs_id = predicted.at(j).id;
+   			landmark_number = j;
 		}
 		
 	}
 	observations.at(i).id = best_obs_id;
+	double weight = multiv_prob(std_landmark[0],std_landmark[1],x_obs,y_obs,predicted[landmark_number].x,predicted[landmark_number].y);
+	tot_weight *= weight;
+	
+	
+	
 	
 	//For visualization
 	associations.push_back(best_obs_id);
@@ -152,6 +161,9 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    //Set assosciation
    SetAssociations(particle, associations, sense_x, sense_y);
 	//cout<<"dataAssociation ends"<<endl;
+   particle.weight = tot_weight;
+   weights[particle_no] = tot_weight;
+   return tot_weight;
 }
 
 double ParticleFilter::multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs,
@@ -227,33 +239,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		
 	}
 	
-	dataAssociation(landmarks_predictions,transformed_obs,particles[i]);
+	double tot_weight = dataAssociation(landmarks_predictions,transformed_obs,particles[i],std_landmark,i);
 	
-	double tot_weight=1;
 	
-	for(int f=0;f<transformed_obs.size();f++)
-	{
-		int id = transformed_obs[f].id;
-		for(int z=0;z<landmarks_predictions.size();z++)
-		{
-			int land_id = landmarks_predictions.at(z).id;
-			if(id==land_id)
-			{
-			double weight = multiv_prob(std_landmark[0],std_landmark[1],transformed_obs[f].x,transformed_obs[f].y,landmarks_predictions[z].x,landmarks_predictions[z].y);	
-			tot_weight *= weight;
-		//	cout<<"Gauss weight "<<weight<<endl; 
-			}
-			
-		}
-		
-		//cout<<transformed_obs[f].x<<" "<<transformed_obs[f].y<<endl;
-		//cout<<landmarks_predictions[id].x<<" "<<landmarks_predictions[id].y<<endl;
-		
-		//cout<<"Gauss weight "<<weight<<endl; 
-			
-	}
-	particles.at(i).weight = tot_weight;
-	weights[i] = tot_weight;
 	//cout<<"total weight "<<tot_weight<<endl;
 	weight_sum += tot_weight;
    }
