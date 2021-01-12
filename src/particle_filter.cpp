@@ -34,8 +34,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
    *   (and others in this file).
    */
    
- // cout<<"Initilaiztion particle start"<<endl;
-  num_particles = 20;  // TODO: Set the number of particles
+  cout<<"Initilaiztion particle start"<<endl;
+  num_particles = 10;  // TODO: Set the number of particles
   std::default_random_engine gen;
   if(!is_initialized)
   {
@@ -54,6 +54,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   	particles.push_back(p);
   	weights.push_back(1.0);
   	//cout<<"Particle "<<i<<p.x<<" "<<p.y<<" "<<p.theta<<endl;
+  	//IMPORTANT
+  	is_initialized=true;
   	}
   }
   
@@ -71,8 +73,10 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    */
    //However, adding noise to the particles at the end ensures that all they move is somewhat random fashion and cover more possibilities. This is essentially adding noise to the speed and yaw rate because that's how you determine the position of the prediction. You don't want all the particles to converge to the same spot at the end.
    //so we don't add noise to velocity and yaw_rate
-  // cout<<"Prediction start"<<endl;
+   
    std::default_random_engine gen;
+   cout<<"Prediction start"<<endl;
+   cout<<particles.size()<<endl;
    for (int i=0;i<particles.size();i++)
    {
    	if(fabs(yaw_rate) > 0.00001)
@@ -101,6 +105,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    }
    
 	//cout<<"Prediction ends"<<endl;
+	//cout<<particles.size()<<endl;
 }
 
 double ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
@@ -120,13 +125,17 @@ double ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    std::vector<double> sense_x;
    std::vector<double> sense_y;
    
+   double x_part = particle.x;
+   double y_part = particle.y;
+   double theta_part = particle.theta;
    
    double tot_weight=1;
    //cout<<"dataAssociation start"<<endl;
+   
    for(int i=0;i<observations.size();i++)
    {
-   	double x_obs = observations.at(i).x;
-   	double y_obs = observations.at(i).y;
+   	double x_obs = x_part + (cos(theta_part) * observations[i].x) - (sin(theta_part) * observations[i].y);
+   	double y_obs = y_part + (sin(theta_part) * observations[i].x) + (cos(theta_part) * observations[i].y);
    	double best_obs = 10;
    	double best_obs_id = 10;
    	int landmark_number=0;
@@ -134,6 +143,7 @@ double ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    	{
    		//double x_pred = predicted.at(j).x;
    		//double y_pred = predicted.at(j).y;
+   		
    		
    		double dist = sqrt((predicted.at(j).x - x_obs)*(predicted.at(j).x - x_obs) + (predicted.at(j).y - y_obs)*(predicted.at(j).y - y_obs));
    		
@@ -147,6 +157,7 @@ double ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
 	}
 	observations.at(i).id = best_obs_id;
 	double weight = multiv_prob(std_landmark[0],std_landmark[1],x_obs,y_obs,predicted[landmark_number].x,predicted[landmark_number].y);
+	cout<<"Weight for each "<<weight<<endl;
 	tot_weight *= weight;
 	
 	
@@ -163,6 +174,7 @@ double ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
 	//cout<<"dataAssociation ends"<<endl;
    particle.weight = tot_weight;
    weights[particle_no] = tot_weight;
+   //cout<<"TOt weight "<<tot_weight<<endl;
    return tot_weight;
 }
 
@@ -201,8 +213,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
    *   and the following is a good resource for the actual equation to implement
    *   (look at equation 3.33) http://planning.cs.uiuc.edu/node99.html
    */
-   //cout<<"updateWeights start"<<endl;
+   cout<<"updateWeights start"<<endl;
    double weight_sum=0;
+   cout<<particles.size()<<endl;
    for(int i=0;i<particles.size();i++)
    {
    	
@@ -210,6 +223,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	double x_part = particles[i].x;
 	double y_part = particles.at(i).y;
 	double theta_part = particles.at(i).theta;
+	
+	
 	
 	vector<LandmarkObs> landmarks_predictions;
 	
@@ -226,19 +241,19 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 	}
 					  
-	vector<LandmarkObs> transformed_obs;
-	for(int k=0;k<observations.size();k++)
-	{
-		
-	
-		double xm = x_part + (cos(theta_part) * observations[k].x) - (sin(theta_part) * observations[k].y);
-		double ym = y_part + (sin(theta_part) * observations[k].x) + (cos(theta_part) * observations[k].y);
-		int id = observations[k].id;
-		transformed_obs.push_back(LandmarkObs{id,xm,ym});	
-		
-		
-	}
-	
+//	vector<LandmarkObs> transformed_obs;
+//	for(int k=0;k<observations.size();k++)
+//	{
+//		
+//	
+//		double xm = x_part + (cos(theta_part) * observations[k].x) - (sin(theta_part) * observations[k].y);
+//		double ym = y_part + (sin(theta_part) * observations[k].x) + (cos(theta_part) * observations[k].y);
+//		int id = observations[k].id;
+//		transformed_obs.push_back(LandmarkObs{id,xm,ym});	
+//		
+//		
+//	}
+	vector<LandmarkObs> transformed_obs = observations;
 	double tot_weight = dataAssociation(landmarks_predictions,transformed_obs,particles[i],std_landmark,i);
 	
 	
@@ -252,8 +267,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
    	particles.at(i).weight/=weight_sum;
    	weights[i] /= weight_sum;
    	
-   	//cout<<particles.at(i).weight<<endl;
-   	//cout<<"weight sum "<<weight_sum<<endl;
+   	//cout<<"particle weight "<<particles.at(i).weight<<endl;
+   	cout<<"weight[i]"<<weights[i]<<endl;
    	
    }
 	//cout<<"updateWeights ends"<<endl;
@@ -266,7 +281,7 @@ void ParticleFilter::resample() {
    * NOTE: You may find std::discrete_distribution helpful here.
    *   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
    */
-   //cout<<"Resampling start"<<endl;
+   cout<<"Resampling start"<<endl;
    
 //   std::vector<double> weights_resampled;
 //   for(int i=0;i<particles.size();i++)
@@ -286,11 +301,16 @@ void ParticleFilter::resample() {
    	//particles[sample].id = i;
    	particles_resampled.push_back(particles[sample]);
    	particles_resampled[i].id = i;
-   	
+   	cout<<"id"<<particles_resampled[i].id<<endl;
+   	cout<<"res weight"<<particles_resampled[i].weight<<endl;
+   	cout<<"res x "<<particles_resampled[i].x<<endl;
+   	cout<<"res y "<<particles_resampled[i].y<<endl;
+   	cout<<"res theta "<<particles_resampled[i].theta<<endl;
    }
-   
+  
    particles = particles_resampled;
 	//cout<<"Resampling ends"<<endl;
+	
 }
 
 void ParticleFilter::SetAssociations(Particle& particle, 
