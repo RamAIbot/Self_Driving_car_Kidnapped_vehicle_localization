@@ -38,22 +38,22 @@
 
 <p> The Particle filters uses the essence of the Bayes localization algorithm. The Bayes localization algorithm also uses Markov assumption which states that at a particular time the state of the particle depends only on the previous states and not on the states before that.</p>
 
-<img src="" alt=""/>
+<img src="Capture7.JPG" alt="formula2"/>
 
 <p>Here the belief of a particular position xt given the present observation zt and all the previous observations z1:t-1 along with the map and all the controls u1:t-1 is given by the product of normalization coefficient,observation model and motion model. Based on the Markov assumption, the Observation at particular time zt given current position x1,previous observations z1:t-1,map and all the previous controls u1:t-1 can be best assumed to depend only the present state xt and the map. Applying the Markov assumption to the motion model, the Position of the particle at time t (xt) given all the previous observations z1:t-1,map and all the previous controls u1:t-1 can be best assumed to be dependent on the previous position xt-1,map and the current control ut. This values is multiplied with the prior belief of the corresponding particle and summed over all the locations in the map.This forms a recursive structure. Thus the position of particle at t depends on the prior belief (xt-1),current observation,current control and the map.The Observation of the particle depends on the current position (xt) and the map m.</p>
 
 <h4> Approxmiation for constant map </h4>
 
-<img src="" alt=""/>
+<img src="Capture8.JPG" alt="formula3"/>
 
 <p> For localization problems where the map doesn't change much we asssume the m to be constant and don't consider in the motion model. </p>
 
 <h4> Analogy in Particle filters </h4>
 
-<img src="" alt=""/>
+<img src="Capture10.JPG" alt="pf"/>
 
 <p> In the Prediction step of the particle which is same as the motion update step in bayes localization, we estimate the current position of the new particle using the motion model with Gaussian noise and the prior position of particles. The P(X'|X) probability of the new random particle is obtained by the motion model which is multiplied with the prior of the particle and sampled from the sum of the probabilities to get the new random particle. </p>
 
-<img src="" alt=""/>
+<img src="Capture9.JPG" alt="norm"/>
 
 <p> In the Update step of the particle which is same as the measurement update step in the bayes localization, we estimate the position of the new particle given the measurments based on the product of the important weights (P(Z|X) - Probability of obtaining the particular measurment given the corresponding X location) and the prior of the particles which is obtained after the motion update step (prediction step). For more observations based on the bayes localization we assosciate each landmark with the corresponding particle's observation , apply normal distribution and finally  multiply all the observation probabilities. We resample these to obtain the X position of the new particles. The resampling ensures that the particles in the particular location with higher weight (particles which are closer to car) are given more priority.</p>
