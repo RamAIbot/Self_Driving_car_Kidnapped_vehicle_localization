@@ -61,10 +61,12 @@
 
 <h2> Updating Weights </h2>
 
-<img src="" alt=""/>
+<img src="Capture12.JPG" alt="transformation"/>
 
 <p> Consider a particle P at coordinates (4,5) and facing downwards at orientation of 90 degrees. The car is aligned with the map coordinates and maeasures 3 landmarks L1,L2 and L5 with Observations OBS1, OBS2, OBS3. The car's sensors has x coordinates facing along the front and y coordinates along the left of the car. Here the car is aligned such that it matches the map coordinates.</p>
 <p>    Since the particle is facing downwards, it is not aligned with the map coordinates. So we need to transform the car's observation based on the particle orientation. Since the particle's x axis is facing downwards, we rotate the car's coordinates by 90 degrees in the clockwise direction. Now to find the location of the landmarks from the particles position (converting the landmarks to map coordinates) we add the particle's position to the rotated coordinates. This gives the landmark estimated by the particle in map coordinates. </p>
+
+<img src="Capture11.JPG" alt="matrix"/>
 
 <h3> Data assosciation </h3> 
 
@@ -76,7 +78,7 @@
 
 <h2> Resampling </h2>
 
-<img src="" alt=""/>
+<img src="Capture13.JPG" alt="Resampling"/>
 
 <p> We use the resampling wheel approch to estimate the new particles. The psuedo code is as below. </p>
 
@@ -119,6 +121,6 @@ Now in simulator click start.
 ```
 <h2> Results </h2>
 
-<img src="" alt=""/>
+<img src="Capture1.JPG" alt="Result"/>
 
 
