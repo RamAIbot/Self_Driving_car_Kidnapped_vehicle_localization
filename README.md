@@ -57,3 +57,68 @@
 <img src="Capture9.JPG" alt="norm"/>
 
 <p> In the Update step of the particle which is same as the measurement update step in the bayes localization, we estimate the position of the new particle given the measurments based on the product of the important weights (P(Z|X) - Probability of obtaining the particular measurment given the corresponding X location) and the prior of the particles which is obtained after the motion update step (prediction step). For more observations based on the bayes localization we assosciate each landmark with the corresponding particle's observation , apply normal distribution and finally  multiply all the observation probabilities. We resample these to obtain the X position of the new particles. The resampling ensures that the particles in the particular location with higher weight (particles which are closer to car) are given more priority.</p>
+
+
+<h2> Updating Weights </h2>
+
+<img src="" alt=""/>
+
+<p> Consider a particle P at coordinates (4,5) and facing downwards at orientation of 90 degrees. The car is aligned with the map coordinates and maeasures 3 landmarks L1,L2 and L5 with Observations OBS1, OBS2, OBS3. The car's sensors has x coordinates facing along the front and y coordinates along the left of the car. Here the car is aligned such that it matches the map coordinates.</p>
+<p>    Since the particle is facing downwards, it is not aligned with the map coordinates. So we need to transform the car's observation based on the particle orientation. Since the particle's x axis is facing downwards, we rotate the car's coordinates by 90 degrees in the clockwise direction. Now to find the location of the landmarks from the particles position (converting the landmarks to map coordinates) we add the particle's position to the rotated coordinates. This gives the landmark estimated by the particle in map coordinates. </p>
+
+<h3> Data assosciation </h3> 
+
+<p> We now associate each transformed observations (landmarks estimated by particle) to the landmarks in the map within the sensor range. We use the nearest neighbour assosciation technique for this. The euclidian distance is used as the measurement technique. </p>
+
+<h3> Updation </h3>
+
+<p> Finally we use multivariate Gaussian distribution to estimate the weights of the particular particle. The mean is taken as the landmark x and y values which is of nearest to the corresponding particle. The weights are then normalized to be used as probability distribution for resampling </p>
+
+<h2> Resampling </h2>
+
+<img src="" alt=""/>
+
+<p> We use the resampling wheel approch to estimate the new particles. The psuedo code is as below. </p>
+
+```
+index = Uniform Sampling[1...N] //N particles
+Beta = 0
+
+for i= 1..N:
+    Beta = Beta + Uniform Sampling(0...2*Wmax) /Wmax = Maximum weight
+    while w[index] < beta:
+        beta = beta - w[index]
+        index = index + 1
+
+    select p[index]
+    
+```
+
+<h2> Implementation </h2>
+
+```
+The simulator can be downloaded in the link (Term 2 Simulator V1.45)
+https://github.com/udacity/self-driving-car-sim/releases
+Installation of dependencies (uWebsocket)
+
+apt-get install zlib1g-dev
+./install-linux.sh (based on linux distribution)
+
+To Run the project.
+First Start the simulator for kidnapped vehicle localization project.
+Now in terminal in project path
+
+mkdir build
+cd build
+cmake ..
+make
+./particle_filter
+
+Now in simulator click start.
+
+```
+<h2> Results </h2>
+
+<img src="" alt=""/>
+
+
